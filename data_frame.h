@@ -24,15 +24,19 @@ protected:
         wxButton* add_btn = new wxButton( this, wxID_ANY, "Добавить" );
         button_sizer->Add( add_btn, 0, wxRIGHT, 10 );
 
+        wxButton* edit_btn = new wxButton(this, wxID_ANY, "Изменить");
+        button_sizer->Add( edit_btn, 0, wxRIGHT, 10 );
+
         wxButton* delete_btn = new wxButton(this, wxID_ANY, "Удалить");
         button_sizer->Add( delete_btn, 0, wxRIGHT, 10 );
 
         wxButton* cancel_btn = new wxButton(this, wxID_ANY, "Закрыть");
         button_sizer->Add( cancel_btn, 0 );
 
-        add_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnClientAddClick, this );
-        delete_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnClientDeleteClick, this );
+        add_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnAddClick, this );
+        delete_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnDeleteClick, this );
         cancel_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnCancelClick, this );
+        edit_btn->Bind( wxEVT_COMMAND_BUTTON_CLICKED, &DataFrame::OnEditClick, this );
 
         if( mController )
         {
@@ -46,18 +50,26 @@ protected:
         this->SetSizerAndFit( main_sizer );
     }
 
-    virtual void OnClientAddClick( wxCommandEvent& event ) {}
+    virtual void OnAddClick( wxCommandEvent& event ) {}
 
-    void OnClientDeleteClick( wxCommandEvent& event )
+    void OnDeleteClick( wxCommandEvent& event )
     {
         T data;
         data.mId = mListView->GetSelectedItemIndex();
+
+        if( data.mId == -1)
+        {
+            wxLogMessage( "Данные не выбраны!" );
+            return;
+        }
 
         if( mController && data.mId != -1 )
             mController->Notify( ControllerEvent::BUTTON_DELETE_PRESSED, data );
         
         mListView->RemoveSelectedItem();
     }
+
+    virtual void OnEditClick( wxCommandEvent& event ) {}
 
     void OnCancelClick( wxCommandEvent& event ) { Close( true ); }
 

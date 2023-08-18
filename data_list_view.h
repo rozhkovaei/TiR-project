@@ -21,6 +21,7 @@ public:
 
     void RemoveSelectedItem() { mListView->RemoveItem(); }
     int GetSelectedItemIndex() { return mListView->GetSelectedItemIndex(); }
+    T* GetSelectedItemData() { return mListView->GetSelectedItemData(); }
 
 protected:
 

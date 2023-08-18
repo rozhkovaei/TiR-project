@@ -17,6 +17,7 @@ public:
 
     virtual void AddData( const WeaponData& data ) override;
     virtual void DeleteData( const WeaponData& data ) override;
+    virtual void EditData( const WeaponData& data ) override;
     virtual void ShowAllData() override;
 
     virtual void SetClientsObserver( const std::shared_ptr< IUpdateObserver< WeaponData > >& observer ) override;

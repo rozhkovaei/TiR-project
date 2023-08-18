@@ -17,7 +17,8 @@ public:
 
 private:
 
-   virtual void OnClientAddClick( wxCommandEvent& event ) override;
+   virtual void OnAddClick( wxCommandEvent& event ) override;
+   virtual void OnEditClick( wxCommandEvent& event ) override;
 };
 
 class WeaponAddFrame: public DataAddFrame< WeaponData >
@@ -25,14 +26,19 @@ class WeaponAddFrame: public DataAddFrame< WeaponData >
 public:
 
     WeaponAddFrame( const wxString& title, const wxPoint& pos, const wxSize& size,
-                    const std::shared_ptr< Controller< WeaponData > >& controller );
+                    const std::shared_ptr< Controller< WeaponData > >& controller,
+                    WeaponData* data = nullptr );
 
 private:
 
     virtual void OnOkClick( wxCommandEvent& event ) override;
 
-    wxTextCtrl* mType;
-    wxTextCtrl* mCaliber;
+    void AddItems();
+    void SetValues();
+
+    wxTextCtrl* mSerialNumber;
+    wxChoice* mType;
+    wxChoice* mCaliber;
     wxTextCtrl* mMark;
     wxTextCtrl* mIssueYear;
 };

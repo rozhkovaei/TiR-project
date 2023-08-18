@@ -21,6 +21,7 @@ struct ClientData
 struct WeaponData
 {
     int mId = 0;
+    std::string mSerialNumber;
     std::string mType;
     std::string mCaliber;
     std::string mMark;
@@ -40,5 +41,6 @@ enum class ControllerEvent
 {
     BUTTON_CLIENTS_PRESSED = 0,
     BUTTON_ADD_PRESSED = 1,
-    BUTTON_DELETE_PRESSED = 2
+    BUTTON_DELETE_PRESSED = 2,
+    BUTTON_EDIT_PRESSED = 3
 };

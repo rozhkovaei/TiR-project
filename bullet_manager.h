@@ -16,6 +16,7 @@ public:
 
     virtual void AddData( const BulletData& data ) override;
     virtual void DeleteData( const BulletData& data ) override;
+    virtual void EditData( const BulletData& data ) override;
     virtual void ShowAllData() override;
 
     virtual void SetClientsObserver( const std::shared_ptr< IUpdateObserver< BulletData > >& observer ) override;

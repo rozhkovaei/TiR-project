@@ -89,6 +89,18 @@ public:
         return -1;
     }
 
+    T* GetSelectedItemData()
+    {
+        auto selectedListIndex = getFirstSelectedIndex();
+
+        if( selectedListIndex != -1 && orderedIndices.size() > selectedListIndex )
+        {
+            return &items[ orderedIndices[ selectedListIndex ] ];
+        }
+
+        return nullptr;
+    }
+
 protected:
 
     bool sortAscending = true;

@@ -23,6 +23,12 @@ int add_weapon_results( void* observer, int columns, char **data, char ** names 
                 cl_data.mId = std::atoi( str.c_str() );
                 continue;
             }
+            if( column_name == "serial_number" )
+            {
+                std::string str ( data[i] ); 
+                cl_data.mSerialNumber = str.c_str();
+                continue;
+            }
             if( column_name == "type" )
             {
                 std::string str ( data[i]); 
@@ -57,15 +63,16 @@ WeaponManager::WeaponManager( const std::shared_ptr< IErrorObserver >& error_obs
 {
   //  std::string query1 = "DROP TABLE WEAPON";
 
-  // if( mDBManager )
-   //     mDBManager->ExecuteQuery( DB_NAME, query1.data(), mUpdateObserver.get() );
+//   if( mDBManager )
+  //      mDBManager->ExecuteQuery( DB_NAME, query1.data(), mUpdateObserver.get() );
 
     std::string query = "CREATE TABLE IF NOT EXISTS WEAPON ("
         "id INTEGER PRIMARY KEY,"
-        "type VARCHAR(255) NOT NULL ,"
-        "caliber VARCHAR(255) NOT NULL ,"
-        "mark VARCHAR(255),"
-        "issue_year VARCHAR(255))";
+        "serial_number VARCHAR NOT NULL,"
+        "type VARCHAR NOT NULL,"
+        "caliber VARCHAR NOT NULL,"
+        "mark VARCHAR NOT NULL,"
+        "issue_year VARCHAR)";
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query.data(), mUpdateObserver.get() );
@@ -75,9 +82,21 @@ void WeaponManager::AddData( const WeaponData& data )
 {
     std::stringstream query_ss;
 
-    query_ss << "INSERT INTO WEAPON (id, type, caliber, mark, issue_year) VALUES (\"" <<
-        data.mId << "\", \"" << data.mType << "\", \"" << data.mCaliber << "\", \"" <<
+    query_ss << "INSERT INTO WEAPON (serial_number, type, caliber, mark, issue_year) VALUES (\"" <<
+        data.mSerialNumber << "\", \"" << data.mType << "\", \"" << data.mCaliber << "\", \"" <<
         data.mMark << "\", \"" << data.mIssueYear << "\") RETURNING *";
+
+    if( mDBManager )
+        mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_weapon_results );
+}
+
+void WeaponManager::EditData( const WeaponData& data )
+{
+    std::stringstream query_ss;
+
+    query_ss << "UPDATE WEAPON SET serial_number = \"" << data.mSerialNumber <<
+        "\", type = \"" << data.mType << "\", caliber = \"" << data.mCaliber << "\", mark = \"" << 
+        data.mMark << "\", issue_year = \"" << data.mIssueYear << "\" WHERE id = " << data.mId;
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_weapon_results );

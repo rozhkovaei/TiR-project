@@ -49,6 +49,13 @@ public:
             }
             break;
 
+            case ControllerEvent::BUTTON_EDIT_PRESSED:
+            {
+                if( mDataManager )
+                    mDataManager->EditData( data );
+            }
+            break;
+
             default:
             break;
         }

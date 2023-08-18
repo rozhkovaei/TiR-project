@@ -62,10 +62,10 @@ BulletManager::BulletManager( const std::shared_ptr< IErrorObserver >& error_obs
 
     std::string query = "CREATE TABLE IF NOT EXISTS BULLET ("
         "id INTEGER PRIMARY KEY,"
-        "type VARCHAR(255) NOT NULL ,"
-        "caliber VARCHAR(255) NOT NULL ,"
-        "serial_number VARCHAR(255),"
-        "issue_year VARCHAR(255))";
+        "type VARCHAR NOT NULL ,"
+        "caliber VARCHAR NOT NULL ,"
+        "serial_number VARCHAR NOT NULL,"
+        "issue_year VARCHAR)";
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query.data(), mUpdateObserver.get() );
@@ -75,9 +75,20 @@ void BulletManager::AddData( const BulletData& data )
 {
     std::stringstream query_ss;
 
-    query_ss << "INSERT INTO BULLET (id, type, caliber, serial_number, issue_year) VALUES (\"" <<
-        data.mId << "\", \"" << data.mType << "\", \"" << data.mCaliber << "\", \"" <<
+    query_ss << "INSERT INTO BULLET (type, caliber, serial_number, issue_year) VALUES (\"" << data.mType << "\", \"" << data.mCaliber << "\", \"" <<
         data.mSerialNumber << "\", \"" << data.mIssueYear << "\") RETURNING *";
+
+    if( mDBManager )
+        mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_bullet_results );
+}
+
+void BulletManager::EditData( const BulletData& data )
+{
+    std::stringstream query_ss;
+
+    query_ss << "UPDATE BULLET SET type = \"" << data.mType << "\", caliber = \"" << data.mCaliber << 
+        "\", serial_number = \"" << data.mSerialNumber << "\", issue_year = \"" << data.mIssueYear << 
+        "\" WHERE id = " << data.mId;
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_bullet_results );

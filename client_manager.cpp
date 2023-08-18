@@ -63,15 +63,15 @@ ClientManager::ClientManager( const std::shared_ptr< IErrorObserver >& error_obs
   //  std::string query1 = "DROP TABLE CLIENTS";
 
   // if( mDBManager )
-   //     mDBManager->ExecuteQuery( DB_NAME, query1.data(), mUpdateObserver.get() );
+    //    mDBManager->ExecuteQuery( DB_NAME, query1.data(), mUpdateObserver.get() );
 
     std::string query = "CREATE TABLE IF NOT EXISTS CLIENTS ("
         "id INTEGER PRIMARY KEY,"
-        "last_name VARCHAR(255) NOT NULL ,"
-        "first_name VARCHAR(255) NOT NULL ,"
-        "patronymic VARCHAR(255),"
-        "passport VARCHAR(11),"
-        "phone VARCHAR(20))";
+        "last_name VARCHAR NOT NULL,"
+        "first_name VARCHAR NOT NULL,"
+        "patronymic VARCHAR,"
+        "passport VARCHAR,"
+        "phone VARCHAR)";
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query.data(), mUpdateObserver.get() );
@@ -84,6 +84,18 @@ void ClientManager::AddData( const ClientData& data )
     query_ss << "INSERT INTO CLIENTS (last_name, first_name, patronymic, passport, phone) VALUES (\"" <<
         data.mLastName << "\", \"" << data.mFirstName << "\", \"" << data.mPatronymic << "\", \"" <<
         data.mPassport << "\", \"" << data.mPhone << "\") RETURNING *";
+
+    if( mDBManager )
+        mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_client_results );
+}
+
+void ClientManager::EditData( const ClientData& data )
+{
+    std::stringstream query_ss;
+
+    query_ss << "UPDATE CLIENTS SET last_name = \"" << data.mLastName <<
+        "\", first_name = \"" << data.mFirstName << "\", patronymic = \"" << data.mPatronymic << "\", passport = \"" << 
+        data.mPassport << "\", phone = \"" << data.mPhone << "\" WHERE id = " << data.mId;
 
     if( mDBManager )
         mDBManager->ExecuteQuery( DB_NAME, query_ss.str(), mUpdateObserver.get(), add_client_results );

@@ -7,6 +7,12 @@
 
 #include "controller.h"
 
+enum class FrameType
+{
+    TYPE_ADD = 0,
+    TYPE_EDIT = 1
+};
+
 template < class T >
 class DataAddFrame: public wxFrame
 {
@@ -14,13 +20,17 @@ public:
 
     virtual ~DataAddFrame() {}
 
-    DataAddFrame( const wxString& title, const wxPoint& pos, const wxSize& size, const std::shared_ptr< Controller< T > >& controller )
+    DataAddFrame( const wxString& title, const wxPoint& pos, const wxSize& size, 
+                  const std::shared_ptr< Controller< T > >& controller, T* data = nullptr )
         : wxFrame(NULL, wxID_ANY, title, pos, size)
         , mController( controller )
-        {}
+        , mData( data )
+        {
+            mFrameType = data == nullptr ? FrameType::TYPE_ADD : FrameType::TYPE_EDIT;
+        }
 
 protected:
-    void ArrangeItems( wxTextCtrl* ctrl, wxBoxSizer* main_sizer, const std::string& label_text, bool top_border = false )
+    void ArrangeItems( wxWindow* ctrl, wxBoxSizer* main_sizer, const std::string& label_text, bool top_border = false )
     {
         wxBoxSizer* sizer = new wxBoxSizer( wxHORIZONTAL );
 
@@ -41,6 +51,10 @@ protected:
     void OnCancelClick( wxCommandEvent& event ) { Close( true ); }
 
     std::shared_ptr< Controller< T > > mController;
+
+    T* mData = nullptr;
+
+    FrameType mFrameType = FrameType::TYPE_ADD;
 
     wxButton* mOkButton;
     wxButton* mCancelButton;

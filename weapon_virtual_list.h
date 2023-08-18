@@ -8,7 +8,10 @@ public:
     WeaponVirtualListControl( wxWindow *parent, const wxWindowID id, const wxPoint &pos, const wxSize &size )
         : VirtualListControl< WeaponData >( parent, id, pos, size )
     {
-        this->AppendColumn( "№" );
+        this->AppendColumn( "ID" );
+       // this->SetColumnWidth( 0, 30 );
+
+        this->AppendColumn( "Серийный номер" );
        // this->SetColumnWidth( 0, 30 );
 
         this->AppendColumn( "Тип" );
@@ -33,12 +36,14 @@ public:
         case 0:
             return wxString::Format( "%d", item.mId );
         case 1:
-            return item.mType;
+            return item.mSerialNumber;
         case 2:
-            return item.mCaliber;
+            return item.mType;
         case 3:
-            return item.mMark;
+            return item.mCaliber;
         case 4:
+            return item.mMark;
+        case 5:
             return item.mIssueYear;
         default:
             return "";
@@ -63,12 +68,14 @@ public:
             case 0:
                 return genericCompare( i1.mId, i2.mId, ascending );
             case 1:
-                return genericCompare( i1.mType, i2.mType, ascending );
+                return genericCompare( i1.mSerialNumber, i2.mSerialNumber, ascending );
             case 2:
-                return genericCompare( i1.mCaliber, i2.mCaliber, ascending );
+                return genericCompare( i1.mType, i2.mType, ascending );
             case 3:
-                return genericCompare( i1.mMark, i2.mMark, ascending );
+                return genericCompare( i1.mCaliber, i2.mCaliber, ascending );
             case 4:
+                return genericCompare( i1.mMark, i2.mMark, ascending );
+            case 5:
                 return genericCompare( i1.mIssueYear, i2.mIssueYear, ascending );
             default:
                 return false;

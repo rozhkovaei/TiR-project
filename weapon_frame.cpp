@@ -11,24 +11,61 @@ WeaponFrame::WeaponFrame( const wxString& title, const wxPoint& pos, const wxSiz
     AddElements();    
 }
 
-void WeaponFrame::OnClientAddClick( wxCommandEvent& event )
+void WeaponFrame::OnAddClick( wxCommandEvent& event )
 {
     WeaponAddFrame* frame = new WeaponAddFrame( "", wxPoint( 200, 200 ), wxSize( 300, 270 ), mController );
     frame->Show( true );
 }
 
+void WeaponFrame::OnEditClick( wxCommandEvent& event )
+{
+    WeaponData* data = mListView->GetSelectedItemData();
+
+    if( data == nullptr)
+    {
+        wxLogMessage( "Данные не выбраны!" );
+        return;
+    }
+
+    WeaponAddFrame* frame = new WeaponAddFrame( "", wxPoint( 200, 200 ), wxSize( 300, 270 ), mController, data );
+    frame->Show( true );
+}
+
 WeaponAddFrame::WeaponAddFrame( const wxString& title, const wxPoint& pos, const wxSize& size,
-                                const std::shared_ptr< Controller< WeaponData > >& controller )
-        : DataAddFrame< WeaponData >( title, pos, size, controller )
+                                const std::shared_ptr< Controller< WeaponData > >& controller,
+                                WeaponData* data )
+        : DataAddFrame< WeaponData >( title, pos, size, controller, data )
+{
+    AddItems();
+
+    if( mFrameType == FrameType::TYPE_EDIT )
+        SetValues();
+}
+
+void WeaponAddFrame::AddItems( )
 {
     wxBoxSizer* main_sizer = new wxBoxSizer( wxVERTICAL );
 
-    mType = new wxTextCtrl( this, wxID_ANY );
-    mType->SetMinSize( wxSize( 200, mType->GetMinSize().y ) );
+    wxArrayString strings;
+    strings.Add(wxT("Гражданское спортивное огнестрельное оружие с нарезным стволом"));
+    strings.Add(wxT("Гражданское охотничье огнестрельное длинноствольное оружие с нарезным стволом"));
+    strings.Add(wxT("Гражданское спортивное огнестрельное длинноствольное оружие с нарезным стволом"));
+    strings.Add(wxT("Гражданское охотничье длинноствольное оружие"));
+    strings.Add(wxT("Гражданское огнестрельное оружие ограниченного поражения"));
 
+    mSerialNumber = new wxTextCtrl( this, wxID_ANY );
+    mSerialNumber->SetMinSize( wxSize( 200, mSerialNumber->GetMinSize().y ) );
+    ArrangeItems( mSerialNumber, main_sizer, "Серийный номер:", true );
+
+    mType = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, strings, wxCB_DROPDOWN );
+    mType->SetMinSize( wxSize( 200, mType->GetMinSize().y ) );
     ArrangeItems( mType, main_sizer, "Тип:", true );
 
-    mCaliber = new wxTextCtrl( this, wxID_ANY );
+    wxArrayString strings_caliber;
+    strings_caliber.Add(wxT("9 x 19"));
+    strings_caliber.Add(wxT("7,62 x 39"));
+
+    mCaliber = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, strings_caliber, wxCB_DROPDOWN );
     mCaliber->SetMinSize( wxSize( 200, mCaliber->GetMinSize().y ) );
     ArrangeItems( mCaliber, main_sizer, "Калибр:" );
 
@@ -42,7 +79,8 @@ WeaponAddFrame::WeaponAddFrame( const wxString& title, const wxPoint& pos, const
 
     wxBoxSizer* button_sizer = new wxBoxSizer( wxHORIZONTAL );
 
-    mOkButton = new wxButton(this, wxID_ANY, "Добавить");
+    mOkButton = mFrameType == FrameType::TYPE_ADD ? new wxButton(this, wxID_ANY, "Добавить") : 
+        new wxButton(this, wxID_ANY, "Изменить");
     button_sizer->Add( mOkButton, 0, wxRIGHT, 10 );
 
     mCancelButton = new wxButton(this, wxID_ANY, "Отмена");
@@ -57,18 +95,47 @@ WeaponAddFrame::WeaponAddFrame( const wxString& title, const wxPoint& pos, const
    this->SetSizerAndFit( main_sizer );
 }
 
+void WeaponAddFrame::SetValues()
+{
+    if( mData == nullptr )
+        return;
+
+    mType->SetSelection( mType->FindString( mData->mType ) );
+    mCaliber->SetSelection( mCaliber->FindString( mData->mCaliber ) );
+    mSerialNumber->SetValue( mData->mSerialNumber );
+    mMark->SetValue( mData->mMark );
+    mIssueYear->SetValue( mData->mIssueYear );
+}
+
 void WeaponAddFrame::OnOkClick( wxCommandEvent& event )
 {
-    WeaponData data; 
-
-    data.mType = mType->GetValue().ToStdString();
-    data.mCaliber = mCaliber->GetValue().ToStdString();
-    data.mMark = mMark->GetValue().ToStdString();
-    data.mIssueYear = mIssueYear->GetValue().ToStdString();
-
-    if( mController )
+    if( mFrameType == FrameType::TYPE_ADD)
     {
-        mController->Notify( ControllerEvent::BUTTON_ADD_PRESSED, data );
+        WeaponData data; 
+
+        data.mSerialNumber = mSerialNumber->GetValue().ToStdString();
+        data.mType = mType->GetString( mType->GetCurrentSelection() );
+        data.mCaliber = mCaliber->GetString( mCaliber->GetCurrentSelection() );
+        data.mMark = mMark->GetValue().ToStdString();
+        data.mIssueYear = mIssueYear->GetValue().ToStdString();
+
+        if( mController )
+        {
+            mController->Notify( ControllerEvent::BUTTON_ADD_PRESSED, data );
+        }
+    }
+    else if( mFrameType == FrameType::TYPE_EDIT)
+    {
+        mData->mSerialNumber = mSerialNumber->GetValue().ToStdString();
+        mData->mType = mType->GetString( mType->GetCurrentSelection() );
+        mData->mCaliber = mCaliber->GetString( mCaliber->GetCurrentSelection() );
+        mData->mMark = mMark->GetValue().ToStdString();
+        mData->mIssueYear = mIssueYear->GetValue().ToStdString();
+
+        if( mController )
+        {
+            mController->Notify( ControllerEvent::BUTTON_EDIT_PRESSED, *mData );
+        }
     }
 
     Close( true );

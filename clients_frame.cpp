@@ -11,15 +11,38 @@ ClientsFrame::ClientsFrame( const wxString& title, const wxPoint& pos, const wxS
     AddElements();    
 }
 
-void ClientsFrame::OnClientAddClick(wxCommandEvent& event)
+void ClientsFrame::OnAddClick(wxCommandEvent& event)
 {
     ClientAddFrame* clients_frame = new ClientAddFrame( "", wxPoint(200, 200), wxSize(300, 270), mController );
     clients_frame->Show( true );
 }
 
+void ClientsFrame::OnEditClick( wxCommandEvent& event )
+{
+    ClientData* data = mListView->GetSelectedItemData();
+
+    if( data == nullptr)
+    {
+        wxLogMessage( "Данные не выбраны!" );
+        return;
+    }
+
+    ClientAddFrame* frame = new ClientAddFrame( "", wxPoint( 200, 200 ), wxSize( 300, 270 ), mController, data );
+    frame->Show( true );
+}
+
 ClientAddFrame::ClientAddFrame( const wxString& title, const wxPoint& pos, const wxSize& size,
-                                const std::shared_ptr< Controller< ClientData > >& controller )
-        : DataAddFrame< ClientData >( title, pos, size, controller )
+                                const std::shared_ptr< Controller< ClientData > >& controller,
+                                ClientData* data )
+        : DataAddFrame< ClientData >( title, pos, size, controller, data )
+{
+    AddItems();
+
+    if( mFrameType == FrameType::TYPE_EDIT )
+        SetValues();
+}
+
+void ClientAddFrame::AddItems()
 {
     wxBoxSizer* main_sizer = new wxBoxSizer( wxVERTICAL );
 
@@ -46,7 +69,8 @@ ClientAddFrame::ClientAddFrame( const wxString& title, const wxPoint& pos, const
 
     wxBoxSizer* button_sizer = new wxBoxSizer( wxHORIZONTAL );
 
-    mOkButton = new wxButton(this, wxID_ANY, "Добавить");
+    mOkButton = mFrameType == FrameType::TYPE_ADD ? new wxButton(this, wxID_ANY, "Добавить") : 
+        new wxButton(this, wxID_ANY, "Изменить");
     button_sizer->Add( mOkButton, 0, wxRIGHT, 10 );
 
     mCancelButton = new wxButton(this, wxID_ANY, "Отмена");
@@ -61,19 +85,47 @@ ClientAddFrame::ClientAddFrame( const wxString& title, const wxPoint& pos, const
    this->SetSizerAndFit( main_sizer );
 }
 
+void ClientAddFrame::SetValues()
+{
+    if( mData == nullptr )
+        return;
+
+    mEditName->SetValue( mData->mFirstName );
+    mEditSurName->SetValue( mData->mLastName );
+    mEditPatronymicName->SetValue( mData->mPatronymic );
+    mEditPassport->SetValue( mData->mPassport );
+    mEditPhone->SetValue( mData->mPhone );
+}
+
 void ClientAddFrame::OnOkClick( wxCommandEvent& event )
 {
-    ClientData data; 
-
-    data.mFirstName = mEditName->GetValue().ToStdString();
-    data.mLastName = mEditSurName->GetValue().ToStdString();
-    data.mPatronymic = mEditPatronymicName->GetValue().ToStdString();
-    data.mPassport = mEditPassport->GetValue().ToStdString();
-    data.mPhone = mEditPhone->GetValue().ToStdString();
-
-    if( mController )
+    if( mFrameType == FrameType::TYPE_ADD )
     {
-        mController->Notify( ControllerEvent::BUTTON_ADD_PRESSED, data );
+        ClientData data; 
+
+        data.mFirstName = mEditName->GetValue().ToStdString();
+        data.mLastName = mEditSurName->GetValue().ToStdString();
+        data.mPatronymic = mEditPatronymicName->GetValue().ToStdString();
+        data.mPassport = mEditPassport->GetValue().ToStdString();
+        data.mPhone = mEditPhone->GetValue().ToStdString();
+
+        if( mController )
+        {
+            mController->Notify( ControllerEvent::BUTTON_ADD_PRESSED, data );
+        }
+    }
+    else if( mFrameType == FrameType::TYPE_EDIT )
+    {
+        mData->mFirstName = mEditName->GetValue().ToStdString();
+        mData->mLastName = mEditSurName->GetValue().ToStdString();
+        mData->mPatronymic = mEditPatronymicName->GetValue().ToStdString();
+        mData->mPassport = mEditPassport->GetValue().ToStdString();
+        mData->mPhone = mEditPhone->GetValue().ToStdString();
+
+        if( mController )
+        {
+            mController->Notify( ControllerEvent::BUTTON_EDIT_PRESSED, *mData );
+        }
     }
 
     Close( true );
